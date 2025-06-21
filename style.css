@@ -1,0 +1,67 @@
+body {
+    background: linear-gradient(90deg, #b5aaff 0%, #eecbff 100%);
+    min-height: 100vh;
+}
+
+/* Card styling */
+.card {
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.95);
+}
+
+/* Gradient text for app name */
+.gradient-text {
+    background: linear-gradient(90deg, #007cf0, #00dfd8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+/* Input focus effect */
+#todo-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+}
+
+/* Task item animation */
+.list-group-item {
+    transition: background 0.3s, box-shadow 0.3s;
+    background: #f8fafc;
+    border: none;
+    margin-bottom: 8px;
+    border-radius: 0.75rem;
+}
+.list-group-item:hover {
+    background: #e0f7fa;
+    box-shadow: 0 2px 8px rgba(0,124,240,0.08);
+}
+
+/* Completed task style */
+.text-decoration-line-through {
+    color: #6c757d !important;
+    text-decoration: line-through !important;
+    opacity: 0.7;
+    transition: color 0.3s, opacity 0.3s;
+}
+
+/* Button transitions and hover effects */
+button {
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.edit-btn:hover {
+    background: #ffb300 !important;
+    color: #fff !important;
+    transform: scale(1.08);
+}
+.complete-btn:hover {
+    background: #198754 !important;
+    color: #fff !important;
+    transform: scale(1.08);
+}
+.delete-btn:hover {
+    background: #dc3545 !important;
+    color: #fff !important;
+    transform: scale(1.08);
+}
