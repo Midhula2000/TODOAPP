@@ -1,44 +1,60 @@
 // Select elements
 const todoInput = document.getElementById('todo-input');
+const dueDateInput = document.getElementById('due-date-input');
 const addBtn = document.getElementById('add-btn');
 const todoList = document.getElementById('todo-list');
 
 let taskToDelete = null; // Store the <li> to delete
+let tasks = []; // Store all tasks as objects
 
 // Add task
 addBtn.addEventListener('click', function() {
     const task = todoInput.value.trim();
-    if (task) {
-        addTask(task);
+    const dueDate = dueDateInput.value;
+    if (task && dueDate) {
+        tasks.push({ text: task, dueDate, completed: false });
         todoInput.value = '';
+        dueDateInput.value = '';
+        renderTasks();
     }
 });
 
-// Function to add task to the list
-function addTask(task) {
-    const li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-center';
-    li.innerHTML = `
-        <span class="task-text">${task}</span>
-        <div>
-            <button class="btn btn-warning btn-sm me-2 edit-btn" title="Edit">
-                <i class="bi bi-pencil"></i>
-            </button>
-            <button class="btn btn-success btn-sm me-2 complete-btn" title="Complete">✓</button>
-            <button class="btn btn-danger btn-sm delete-btn" title="Delete">✗</button>
-        </div>
-    `;
-    todoList.appendChild(li);
+// Function to render tasks sorted by due date
+function renderTasks() {
+    // Sort tasks by due date ascending
+    tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    todoList.innerHTML = '';
+    tasks.forEach((taskObj, idx) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        if (taskObj.completed) li.classList.add('text-decoration-line-through');
+        li.innerHTML = `
+    <span>
+        <span class="task-text">${taskObj.text}</span>
+        <span class="due-date badge rounded-pill ms-2">${taskObj.dueDate}</span>
+    </span>
+    <div>
+        <button class="btn btn-warning btn-sm me-2 edit-btn" title="Edit">
+            <i class="bi bi-pencil"></i>
+        </button>
+        <button class="btn btn-success btn-sm me-2 complete-btn" title="Complete">✓</button>
+        <button class="btn btn-danger btn-sm delete-btn" title="Delete">✗</button>
+    </div>
+`;
+        li.dataset.idx = idx;
+        todoList.appendChild(li);
+    });
 }
 
 // Handle edit, complete, and delete actions
 todoList.addEventListener('click', function(e) {
     const li = e.target.closest('li');
     if (!li) return;
+    const idx = li.dataset.idx;
 
     // Delete with modal
     if (e.target.closest('.delete-btn')) {
-        taskToDelete = li;
+        taskToDelete = idx;
         const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
         deleteModal.show();
         return;
@@ -46,7 +62,8 @@ todoList.addEventListener('click', function(e) {
 
     // Complete
     if (e.target.closest('.complete-btn')) {
-        li.classList.toggle('text-decoration-line-through');
+        tasks[idx].completed = !tasks[idx].completed;
+        renderTasks();
         return;
     }
 
@@ -68,21 +85,20 @@ todoList.addEventListener('click', function(e) {
         const btn = e.target.closest('.save-btn');
         const input = li.querySelector('input[type="text"]');
         const newText = input.value.trim() || 'Untitled Task';
-        const span = document.createElement('span');
-        span.className = 'task-text';
-        span.textContent = newText;
-        input.replaceWith(span);
+        tasks[idx].text = newText;
         btn.innerHTML = '<i class="bi bi-pencil"></i>';
         btn.classList.remove('save-btn', 'btn-success');
         btn.classList.add('edit-btn', 'btn-warning');
+        renderTasks();
     }
 });
 
-// Handle confirm delete button (make sure this button exists in your HTML)
+// Handle confirm delete button
 document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-    if (taskToDelete) {
-        taskToDelete.remove();
+    if (taskToDelete !== null) {
+        tasks.splice(taskToDelete, 1);
         taskToDelete = null;
+        renderTasks();
     }
     // Hide the modal
     const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));

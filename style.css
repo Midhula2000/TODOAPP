@@ -65,3 +65,13 @@ button {
     color: #fff !important;
     transform: scale(1.08);
 }
+.due-date {
+    background: linear-gradient(90deg, #b5aaff 0%, #eecbff 100%);
+    color: #6c3eb5;
+    font-weight: 500;
+    font-size: 0.95em;
+    padding: 0.4em 0.9em;
+    margin-left: 0.5em;
+    box-shadow: 0 2px 8px rgba(181,170,255,0.10);
+    border: none;
+}
