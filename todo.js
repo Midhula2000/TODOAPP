@@ -5,7 +5,15 @@ const addBtn = document.getElementById('add-btn');
 const todoList = document.getElementById('todo-list');
 
 let taskToDelete = null; // Store the <li> to delete
-let tasks = []; // Store all tasks as objects
+
+// ---- Load tasks from localStorage ----
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+renderTasks();
+
+// ---- Save tasks to localStorage ----
+function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
 
 // Add task
 addBtn.addEventListener('click', function() {
@@ -15,6 +23,7 @@ addBtn.addEventListener('click', function() {
         tasks.push({ text: task, dueDate, completed: false });
         todoInput.value = '';
         dueDateInput.value = '';
+        saveTasks();
         renderTasks();
     }
 });
@@ -29,18 +38,18 @@ function renderTasks() {
         li.className = 'list-group-item d-flex justify-content-between align-items-center';
         if (taskObj.completed) li.classList.add('text-decoration-line-through');
         li.innerHTML = `
-    <span>
-        <span class="task-text">${taskObj.text}</span>
-        <span class="due-date badge rounded-pill ms-2">${taskObj.dueDate}</span>
-    </span>
-    <div>
-        <button class="btn btn-warning btn-sm me-2 edit-btn" title="Edit">
-            <i class="bi bi-pencil"></i>
-        </button>
-        <button class="btn btn-success btn-sm me-2 complete-btn" title="Complete">✓</button>
-        <button class="btn btn-danger btn-sm delete-btn" title="Delete">✗</button>
-    </div>
-`;
+            <span>
+                <span class="task-text">${taskObj.text}</span>
+                <span class="due-date badge rounded-pill ms-2">${taskObj.dueDate}</span>
+            </span>
+            <div>
+                <button class="btn btn-warning btn-sm me-2 edit-btn" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-success btn-sm me-2 complete-btn" title="Complete">✓</button>
+                <button class="btn btn-danger btn-sm delete-btn" title="Delete">✗</button>
+            </div>
+        `;
         li.dataset.idx = idx;
         todoList.appendChild(li);
     });
@@ -63,6 +72,7 @@ todoList.addEventListener('click', function(e) {
     // Complete
     if (e.target.closest('.complete-btn')) {
         tasks[idx].completed = !tasks[idx].completed;
+        saveTasks();
         renderTasks();
         return;
     }
@@ -89,6 +99,7 @@ todoList.addEventListener('click', function(e) {
         btn.innerHTML = '<i class="bi bi-pencil"></i>';
         btn.classList.remove('save-btn', 'btn-success');
         btn.classList.add('edit-btn', 'btn-warning');
+        saveTasks();
         renderTasks();
     }
 });
@@ -98,6 +109,7 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
     if (taskToDelete !== null) {
         tasks.splice(taskToDelete, 1);
         taskToDelete = null;
+        saveTasks();
         renderTasks();
     }
     // Hide the modal
