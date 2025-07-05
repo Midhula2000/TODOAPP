@@ -40,7 +40,28 @@
                         </ul>
 
                     </nav>
-    
+                    <!-- Import (left) and Export (right) buttons in one row -->
+<div class="d-flex justify-content-between mb-3">
+  <!-- Import Button (left) -->
+  <div>
+    <label class="btn btn-outline-success btn-sm mb-0" for="importFile">
+      <i class="bi bi-box-arrow-down"></i> Import
+    </label>
+    <input type="file" id="importFile" accept=".json,.csv" style="display:none;">
+  </div>
+  <!-- Export Dropdown (right) -->
+  <div class="dropdown">
+    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-box-arrow-up"></i> Export
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+      <li><a class="dropdown-item" href="#" id="export-json"><i class="bi bi-filetype-json me-2"></i>JSON</a></li>
+      <li><a class="dropdown-item" href="#" id="export-txt"><i class="bi bi-file-earmark-text me-2"></i>Plain Text</a></li>
+      <li><a class="dropdown-item" href="#" id="export-csv"><i class="bi bi-filetype-csv me-2"></i>CSV</a></li>
+      <li><a class="dropdown-item" href="#" id="export-sql"><i class="bi bi-filetype-sql me-2"></i>SQL</a></li>
+    </ul>
+  </div>
+</div>
                     <ul id="todo-list" class="list-group"></ul>
                 </div>
             </div>

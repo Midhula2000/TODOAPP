@@ -218,3 +218,125 @@ function showToast(message, color = "primary") {
 searchInput.addEventListener('input', renderTasks);
 statusFilter.addEventListener('change', renderTasks);
 
+// Helper function to trigger file download
+function downloadFile(filename, content, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, 0);
+}
+
+// Export as JSON
+document.getElementById('export-json').addEventListener('click', function(e) {
+    e.preventDefault();
+    const data = JSON.stringify(tasks, null, 2);
+    downloadFile('tasks.json', data, 'application/json');
+});
+
+// Export as Plain Text
+document.getElementById('export-txt').addEventListener('click', function(e) {
+    e.preventDefault();
+    const lines = tasks.map(t => `Task: ${t.text}\nDue: ${t.dueDate}\nCompleted: ${t.completed ? "Yes" : "No"}\n`);
+    downloadFile('tasks.txt', lines.join('\n'), 'text/plain');
+});
+
+// Export as CSV
+document.getElementById('export-csv').addEventListener('click', function(e) {
+    e.preventDefault();
+    const header = "Task,Due Date,Completed\n";
+    const rows = tasks.map(t => 
+        `"${t.text.replace(/"/g, '""')}",${t.dueDate},${t.completed ? "Yes" : "No"}`
+    );
+    downloadFile('tasks.csv', header + rows.join('\n'), 'text/csv');
+});
+
+// Export as SQL
+document.getElementById('export-sql').addEventListener('click', function(e) {
+    e.preventDefault();
+    const sql = tasks.map(t => 
+        `INSERT INTO tasks (text, due_date, completed) VALUES ('${t.text.replace(/'/g, "''")}', '${t.dueDate}', ${t.completed ? 1 : 0});`
+    ).join('\n');
+    downloadFile('tasks.sql', sql, 'text/sql');
+});
+
+document.getElementById('importFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+        let importedTasks = [];
+        try {
+            if (ext === 'json') {
+                // Import from JSON
+                importedTasks = JSON.parse(event.target.result);
+            } else if (ext === 'csv') {
+                // Import from CSV
+                const lines = event.target.result.split('\n').filter(Boolean);
+                // Skip header if present
+                let start = 0;
+                if (lines[0].toLowerCase().includes('task') && lines[0].toLowerCase().includes('due')) start = 1;
+                for (let i = start; i < lines.length; i++) {
+                    const [text, dueDate, completed] = lines[i].split(',');
+                    if (text && dueDate) {
+                        importedTasks.push({
+                            text: text.replace(/^"|"$/g, '').replace(/""/g, '"').trim(),
+                            dueDate: dueDate.trim(),
+                            completed: completed && completed.trim().toLowerCase().startsWith('y')
+                        });
+                    }
+                }
+            } else if (ext === 'txt') {
+                // Import from Plain Text (expects format: Task: ..., Due: ..., Completed: ...)
+                const blocks = event.target.result.split(/\n\s*\n/);
+                blocks.forEach(block => {
+                    const lines = block.split('\n');
+                    let text = '', dueDate = '', completed = false;
+                    lines.forEach(line => {
+                        if (line.startsWith('Task:')) text = line.replace('Task:', '').trim();
+                        if (line.startsWith('Due:')) dueDate = line.replace('Due:', '').trim();
+                        if (line.startsWith('Completed:')) completed = line.toLowerCase().includes('yes');
+                    });
+                    if (text && dueDate) importedTasks.push({ text, dueDate, completed });
+                });
+            } else if (ext === 'sql') {
+                // Import from SQL (expects INSERT INTO tasks ...)
+                const regex = /INSERT INTO tasks.*VALUES\s*\('([^']*)',\s*'([^']*)',\s*(\d)\);/gi;
+                let match;
+                while ((match = regex.exec(event.target.result)) !== null) {
+                    importedTasks.push({
+                        text: match[1],
+                        dueDate: match[2],
+                        completed: match[3] === '1'
+                    });
+                }
+            } else {
+                showToast("Unsupported file type!", "danger");
+                return;
+            }
+
+            // Merge imported tasks with existing tasks
+            if (importedTasks.length > 0) {
+                tasks = tasks.concat(importedTasks);
+                saveTasks();
+                renderTasks();
+                showToast("Tasks imported successfully!", "success");
+            } else {
+                showToast("No tasks found in file.", "warning");
+            }
+        } catch (err) {
+            showToast("Import failed: Invalid file format.", "danger");
+        }
+        e.target.value = ''; // Reset file input
+    };
+
+    reader.readAsText(file);
+});
